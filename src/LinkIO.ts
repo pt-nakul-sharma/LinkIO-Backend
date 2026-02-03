@@ -1,7 +1,13 @@
-import { Request, Response, NextFunction } from 'express';
-import { v4 as uuidv4 } from 'uuid';
-import { LinkIOConfig, DeepLinkData, PendingLinkData, Platform, ReferralData } from './types';
-import { detectPlatform, parseQueryParams } from './utils';
+import { Request, Response, NextFunction } from "express";
+import { v4 as uuidv4 } from "uuid";
+import {
+  LinkIOConfig,
+  DeepLinkData,
+  PendingLinkData,
+  Platform,
+  ReferralData,
+} from "./types";
+import { detectPlatform, parseQueryParams } from "./utils";
 
 export class LinkIO {
   private config: LinkIOConfig;
@@ -13,23 +19,30 @@ export class LinkIO {
   handleDeepLink() {
     return async (req: Request, res: Response, next: NextFunction) => {
       try {
-        const userAgent = req.headers['user-agent'] || '';
+        const userAgent = req.headers["user-agent"] || "";
         const platform = detectPlatform(userAgent);
-        const fullUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+        const fullUrl = `${req.protocol}://${req.get("host")}${req.originalUrl}`;
         const params = parseQueryParams(fullUrl);
-        
-        const deviceId = req.query.deviceId as string || req.headers['x-device-id'] as string;
-        
+
+        // Support both path params and query params for referral code
+        if (req.params.referralCode) {
+          params.referralCode = req.params.referralCode;
+        }
+
+        const deviceId =
+          (req.query.deviceId as string) ||
+          (req.headers["x-device-id"] as string);
+
         if (platform === Platform.IOS) {
           if (deviceId) {
             await this.config.storage.savePendingLink(deviceId, {
               url: fullUrl,
               params,
               createdAt: Date.now(),
-              expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000
+              expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000,
             });
           }
-          
+
           res.redirect(`https://apps.apple.com/app/id${this.config.iosAppId}`);
         } else if (platform === Platform.ANDROID) {
           if (deviceId) {
@@ -37,15 +50,17 @@ export class LinkIO {
               url: fullUrl,
               params,
               createdAt: Date.now(),
-              expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000
+              expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000,
             });
           }
-          
-          res.redirect(`https://play.google.com/store/apps/details?id=${this.config.androidPackageName}`);
+
+          res.redirect(
+            `https://play.google.com/store/apps/details?id=${this.config.androidPackageName}`,
+          );
         } else {
           res.status(200).json({
-            message: 'Please open this link on your mobile device',
-            platform: 'web'
+            message: "Please open this link on your mobile device",
+            platform: "web",
           });
         }
       } catch (error) {
@@ -63,17 +78,21 @@ export class LinkIO {
     return {
       url: data.url,
       params: data.params,
-      isDeferred: true
+      isDeferred: true,
     };
   }
 
-  async trackReferral(referralCode: string, refereeId: string, metadata?: Record<string, any>): Promise<void> {
+  async trackReferral(
+    referralCode: string,
+    refereeId: string,
+    metadata?: Record<string, any>,
+  ): Promise<void> {
     const referral: ReferralData = {
       referrerId: referralCode,
       refereeId,
       referralCode,
       timestamp: Date.now(),
-      metadata
+      metadata,
     };
 
     await this.config.storage.saveReferral(referral);
@@ -94,34 +113,34 @@ export class LinkIO {
         details: [
           {
             appID: `${this.config.iosTeamId}.${this.config.iosBundleId}`,
-            paths: ['*']
-          }
-        ]
-      }
+            paths: ["*"],
+          },
+        ],
+      },
     };
   }
 
   generateAssetLinks() {
-    return this.config.androidSHA256Fingerprints.map(fingerprint => ({
-      relation: ['delegate_permission/common.handle_all_urls'],
+    return this.config.androidSHA256Fingerprints.map((fingerprint) => ({
+      relation: ["delegate_permission/common.handle_all_urls"],
       target: {
-        namespace: 'android_app',
+        namespace: "android_app",
         package_name: this.config.androidPackageName,
-        sha256_cert_fingerprints: [fingerprint]
-      }
+        sha256_cert_fingerprints: [fingerprint],
+      },
     }));
   }
 
   setupWellKnown() {
     return (req: Request, res: Response) => {
       const path = req.path;
-      
-      if (path === '/.well-known/apple-app-site-association') {
+
+      if (path === "/.well-known/apple-app-site-association") {
         res.json(this.generateAppleAppSiteAssociation());
-      } else if (path === '/.well-known/assetlinks.json') {
+      } else if (path === "/.well-known/assetlinks.json") {
         res.json(this.generateAssetLinks());
       } else {
-        res.status(404).send('Not Found');
+        res.status(404).send("Not Found");
       }
     };
   }
