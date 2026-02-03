@@ -142,7 +142,7 @@ npm test
 
 ## 📄 License
 
-MIT © [Your Name]
+MIT
 
 ## 🤝 Contributing
 
