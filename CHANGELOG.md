@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2026-02-03
+
+### Added
+
+- Generic deep link endpoint `/link` - handles ANY params
+- Support for multiple link types: referral, profile, car, product, etc.
+- Automatic path param merging for backward compatibility
+
+### Changed
+
+- `handleDeepLink()` now accepts any query/path params generically
+- Updated documentation with multi-project examples
+
+### Example URLs
+
+```
+https://rokart.in/link?type=referral&code=ABC123
+https://speekfeed.in/link?type=profile&userId=456
+https://ejaro.com/link?type=car&carId=789
+```
+
 ## [1.1.1] - 2026-02-03
 
 ### Changed

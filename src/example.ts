@@ -20,8 +20,16 @@ const linkIO = new LinkIO({
 // Well-known files - required at domain root for iOS/Android verification
 app.get("/.well-known/*", linkIO.setupWellKnown());
 
-// Deep link handler - URL structure depends on your app's deep link format
-app.get("/refer/:referralCode", linkIO.handleDeepLink());
+// Generic deep link handler - works with any params
+// Examples:
+//   /link?type=referral&code=ABC123
+//   /link?type=profile&userId=456
+//   /link?type=car&carId=789
+app.get("/link", linkIO.handleDeepLink());
+
+// Optional: Path-based routes for cleaner URLs (backward compatible)
+// app.get('/refer/:referralCode', linkIO.handleDeepLink());
+// app.get('/profile/:userId', linkIO.handleDeepLink());
 
 // ===========================================
 // API ENDPOINTS - Use these methods in YOUR project's existing routes

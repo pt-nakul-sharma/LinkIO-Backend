@@ -16,6 +16,13 @@ export class LinkIO {
     this.config = config;
   }
 
+  /**
+   * Generic deep link handler - works with any params
+   * Usage: app.get('/link', linkIO.handleDeepLink())
+   * URLs: /link?type=referral&code=ABC123
+   *       /link?type=profile&userId=456
+   *       /link?type=car&carId=789
+   */
   handleDeepLink() {
     return async (req: Request, res: Response, next: NextFunction) => {
       try {
@@ -24,10 +31,12 @@ export class LinkIO {
         const fullUrl = `${req.protocol}://${req.get("host")}${req.originalUrl}`;
         const params = parseQueryParams(fullUrl);
 
-        // Support both path params and query params for referral code
-        if (req.params.referralCode) {
-          params.referralCode = req.params.referralCode;
-        }
+        // Merge any path params into params object (for backward compatibility)
+        Object.keys(req.params).forEach((key) => {
+          if (req.params[key]) {
+            params[key] = req.params[key];
+          }
+        });
 
         const deviceId =
           (req.query.deviceId as string) ||

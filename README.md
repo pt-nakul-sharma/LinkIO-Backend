@@ -73,18 +73,23 @@ interface LinkIOConfig {
 
 ```typescript
 // Well-known endpoints (auto-generated)
-app.get("/.well-known/apple-app-site-association", linkIO.setupWellKnown());
-app.get("/.well-known/assetlinks.json", linkIO.setupWellKnown());
+app.get("/.well-known/*", linkIO.setupWellKnown());
+
+// Generic deep link handler - works with ANY params
+app.get("/link", linkIO.handleDeepLink());
+
+// Example URLs:
+//   https://rokart.in/link?type=referral&code=ABC123
+//   https://speekfeed.in/link?type=profile&userId=456
+//   https://ejaro.com/link?type=car&carId=789
+
+// Optional: Path-based routes for cleaner URLs
+// app.get("/refer/:referralCode", linkIO.handleDeepLink());
+// app.get("/profile/:userId", linkIO.handleDeepLink());
 
 // ===========================================
-// API ENDPOINTS
-// Route paths must match your mobile SDK's backendURL configuration
-// If SDK uses: backendURL = "https://api.example.com/api/v1/"
-// Then your routes should be at: /api/v1/pending-link, /api/v1/track-referral
+// API ENDPOINTS - Match your SDK's backendURL
 // ===========================================
-
-// Deep link handler (supports path params)
-app.get("/refer/:referralCode", linkIO.handleDeepLink());
 
 // Get pending link for deferred deep linking
 app.get("/pending-link/:deviceId", async (req, res) => {
