@@ -22,9 +22,10 @@ app.get("/.well-known/*", linkIO.setupWellKnown());
 
 // Generic deep link handler - works with any params
 // Examples:
-//   /link?type=referral&code=ABC123
-//   /link?type=profile&userId=456
-//   /link?type=car&carId=789
+//   /link?referralCode=ABC123
+//   /link?userId=456
+//   /link?carId=789
+//   /link?referralCode=ABC&campaign=summer   (multiple params)
 app.get("/link", linkIO.handleDeepLink());
 
 // Optional: Path-based routes for cleaner URLs (backward compatible)
