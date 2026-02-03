@@ -2,9 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.1] - 2026-02-03
+
+### Changed
+
+- Updated documentation to clarify route structure must match SDK's `backendURL`
+- Simplified example.ts to show core LinkIO method usage
+- Added comments explaining API endpoint customization
+
 ## [1.1.0] - 2026-02-03
 
 ### Added
+
 - Unit tests for `utils.ts` (11 tests)
 - Unit tests for `InMemoryStorage.ts` (10 tests)
 - Unit tests for `LinkIO.ts` (10 tests)
@@ -13,16 +22,19 @@ All notable changes to this project will be documented in this file.
 - API versioning support (`/api/v1/` prefix)
 
 ### Changed
+
 - Updated API endpoints to use `/api/v1/` prefix for mobile app compatibility
 - Updated `handleDeepLink()` to support both path params and query params for referral code
 - Improved documentation with correct GitHub URLs
 
 ### Fixed
+
 - CI workflow now properly runs tests
 
 ## [1.0.0] - 2026-02-03
 
 ### Added
+
 - Initial release
 - LinkIO class with deep link handling
 - Universal Links (iOS) support with AASA generation

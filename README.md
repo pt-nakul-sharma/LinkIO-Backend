@@ -76,12 +76,18 @@ interface LinkIOConfig {
 app.get("/.well-known/apple-app-site-association", linkIO.setupWellKnown());
 app.get("/.well-known/assetlinks.json", linkIO.setupWellKnown());
 
+// ===========================================
+// API ENDPOINTS
+// Route paths must match your mobile SDK's backendURL configuration
+// If SDK uses: backendURL = "https://api.example.com/api/v1/"
+// Then your routes should be at: /api/v1/pending-link, /api/v1/track-referral
+// ===========================================
+
 // Deep link handler (supports path params)
 app.get("/refer/:referralCode", linkIO.handleDeepLink());
 
-// API v1 endpoints
-// Get pending link (for deferred deep linking)
-app.get("/api/v1/pending-link/:deviceId", async (req, res) => {
+// Get pending link for deferred deep linking
+app.get("/pending-link/:deviceId", async (req, res) => {
   const data = await linkIO.getPendingLink(req.params.deviceId);
   res.json(data);
 });

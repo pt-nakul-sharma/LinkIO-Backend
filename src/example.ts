@@ -17,51 +17,37 @@ const linkIO = new LinkIO({
   storage: new InMemoryStorage(),
 });
 
-// Well-known files (no versioning)
+// Well-known files - required at domain root for iOS/Android verification
 app.get("/.well-known/*", linkIO.setupWellKnown());
 
-// Deep link handler (no versioning - for universal/app links)
+// Deep link handler - URL structure depends on your app's deep link format
 app.get("/refer/:referralCode", linkIO.handleDeepLink());
 
-// API v1 endpoints - matches mobile app structure
-app.get("/api/v1/pending-link/:deviceId", async (req, res) => {
-  try {
-    const { deviceId } = req.params;
-    const data = await linkIO.getPendingLink(deviceId);
+// ===========================================
+// API ENDPOINTS - Use these methods in YOUR project's existing routes
+// The URL patterns below are just examples - adapt to your project's structure
+// ===========================================
 
-    if (!data) {
-      return res.status(404).json({ error: "No pending link found" });
-    }
-
-    res.json(data);
-  } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
+// Get pending link for deferred deep linking
+app.get("/pending-link/:deviceId", async (req, res) => {
+  const data = await linkIO.getPendingLink(req.params.deviceId);
+  if (!data) {
+    return res.status(404).json({ error: "No pending link found" });
   }
+  res.json(data);
 });
 
-app.post("/api/v1/track-referral", async (req, res) => {
-  try {
-    const { referralCode, userId, metadata } = req.body;
-
-    if (!referralCode || !userId) {
-      return res.status(400).json({ error: "Missing required fields" });
-    }
-
-    await linkIO.trackReferral(referralCode, userId, metadata);
-    res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
-  }
+// Track a referral
+app.post("/track-referral", async (req, res) => {
+  const { referralCode, userId, metadata } = req.body;
+  await linkIO.trackReferral(referralCode, userId, metadata);
+  res.json({ success: true });
 });
 
-app.get("/api/v1/referrals/:referrerId", async (req, res) => {
-  try {
-    const { referrerId } = req.params;
-    const referrals = await linkIO.getReferrals(referrerId);
-    res.json({ referrals });
-  } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
-  }
+// Get referrals by referrer
+app.get("/referrals/:referrerId", async (req, res) => {
+  const referrals = await linkIO.getReferrals(req.params.referrerId);
+  res.json({ referrals });
 });
 
 const PORT = process.env.PORT || 3000;
