@@ -1,0 +1,58 @@
+{
+  "name": "@linkio/backend",
+  "version": "1.0.0",
+  "description": "Self-hosted deep linking backend for mobile apps - Open source alternative to Branch.io",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node src/example.ts",
+    "test": "jest",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "deep-linking",
+    "universal-links",
+    "app-links",
+    "referral",
+    "deferred-deep-linking",
+    "mobile",
+    "backend",
+    "self-hosted",
+    "branch-alternative"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/LinkIO-Backend.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/LinkIO-Backend/issues"
+  },
+  "homepage": "https://github.com/yourusername/LinkIO-Backend#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "ua-parser-js": "^1.0.37",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.11.0",
+    "@types/ua-parser-js": "^0.7.39",
+    "@types/uuid": "^9.0.7",
+    "typescript": "^5.3.3",
+    "ts-node": "^10.9.2",
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.11"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ]
+}
