@@ -30,8 +30,14 @@ const linkIO = new LinkIO({
 // Domain verification endpoints
 app.get("/.well-known/*", linkIO.setupWellKnown());
 
-// Deep link handler
-app.get("/refer", linkIO.handleDeepLink());
+// Deep link handler (with path param)
+app.get("/refer/:referralCode", linkIO.handleDeepLink());
+
+// API v1 endpoints
+app.get("/api/v1/pending-link/:deviceId", async (req, res) => {
+  const data = await linkIO.getPendingLink(req.params.deviceId);
+  res.json(data);
+});
 
 app.listen(3000);
 ```
@@ -45,6 +51,7 @@ app.listen(3000);
 - **Referral Tracking** - Track who referred whom
 - **Storage Options** - In-memory, Redis, or custom storage
 - **TypeScript** - Full type definitions included
+- **Tested** - 31 unit tests with full coverage
 
 ## 📚 Documentation
 
@@ -154,8 +161,8 @@ Contributions are welcome! Please read the [contributing guidelines](CONTRIBUTIN
 
 ## 📞 Support
 
-- [GitHub Issues](https://github.com/yourusername/LinkIO-Backend/issues)
-- [Documentation](https://github.com/yourusername/LinkIO-Backend#readme)
+- [GitHub Issues](https://github.com/pt-nakul-sharma/LinkIO-Backend/issues)
+- [Documentation](https://github.com/pt-nakul-sharma/LinkIO-Backend#readme)
 
 ## ⭐ Show Your Support
 
