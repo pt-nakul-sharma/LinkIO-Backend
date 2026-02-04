@@ -1,6 +1,6 @@
 {
   "name": "linkio-backend",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Self-hosted deep linking backend for mobile apps - Open source alternative to Branch.io",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
