@@ -1,6 +1,6 @@
 # LinkIO Backend
 
-[![npm version](https://badge.fury.io/js/%40linkio%2Fbackend.svg)](https://www.npmjs.com/package/@linkio/backend)
+[![npm version](https://badge.fury.io/js/linkio-backend.svg)](https://www.npmjs.com/package/linkio-backend)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Self-hosted deep linking backend for mobile apps. Open-source alternative to Branch.io.
@@ -8,12 +8,12 @@ Self-hosted deep linking backend for mobile apps. Open-source alternative to Bra
 ## 🚀 Quick Start
 
 ```bash
-npm install @linkio/backend
+npm install linkio-backend
 ```
 
 ```typescript
 import express from "express";
-import { LinkIO, InMemoryStorage } from "@linkio/backend";
+import { LinkIO, InMemoryStorage } from "linkio-backend";
 
 const app = express();
 
@@ -30,11 +30,11 @@ const linkIO = new LinkIO({
 // Domain verification endpoints
 app.get("/.well-known/*", linkIO.setupWellKnown());
 
-// Deep link handler (with path param)
-app.get("/refer/:referralCode", linkIO.handleDeepLink());
+// Generic deep link handler
+app.get("/link", linkIO.handleDeepLink());
 
-// API v1 endpoints
-app.get("/api/v1/pending-link/:deviceId", async (req, res) => {
+// API endpoints
+app.get("/pending-link/:deviceId", async (req, res) => {
   const data = await linkIO.getPendingLink(req.params.deviceId);
   res.json(data);
 });
@@ -79,9 +79,9 @@ app.get("/.well-known/*", linkIO.setupWellKnown());
 app.get("/link", linkIO.handleDeepLink());
 
 // Example URLs:
-//   https://rokart.in/link?type=referral&code=ABC123
-//   https://speekfeed.in/link?type=profile&userId=456
-//   https://ejaro.com/link?type=car&carId=789
+//   https://rokart.in/link?referralCode=ABC123
+//   https://speekfeed.in/link?userId=456
+//   https://ejaro.com/link?carId=789
 
 // Optional: Path-based routes for cleaner URLs
 // app.get("/refer/:referralCode", linkIO.handleDeepLink());
@@ -98,14 +98,14 @@ app.get("/pending-link/:deviceId", async (req, res) => {
 });
 
 // Track referral
-app.post("/api/v1/track-referral", async (req, res) => {
-  const { referralCode, userId } = req.body;
-  await linkIO.trackReferral(referralCode, userId);
+app.post("/track-referral", async (req, res) => {
+  const { referralCode, userId, metadata } = req.body;
+  await linkIO.trackReferral(referralCode, userId, metadata);
   res.json({ success: true });
 });
 
 // Get referrals for a user
-app.get("/api/v1/referrals/:referrerId", async (req, res) => {
+app.get("/referrals/:referrerId", async (req, res) => {
   const referrals = await linkIO.getReferrals(req.params.referrerId);
   res.json({ referrals });
 });
@@ -116,14 +116,14 @@ app.get("/api/v1/referrals/:referrerId", async (req, res) => {
 **In-Memory (Development)**
 
 ```typescript
-import { InMemoryStorage } from "@linkio/backend";
+import { InMemoryStorage } from "linkio-backend";
 const storage = new InMemoryStorage();
 ```
 
 **Redis (Production)**
 
 ```typescript
-import { RedisStorage } from "@linkio/backend";
+import { RedisStorage } from "linkio-backend";
 import { createClient } from "redis";
 
 const redis = await createClient().connect();
@@ -133,7 +133,7 @@ const storage = new RedisStorage(redis);
 **Custom Storage**
 
 ```typescript
-import { LinkIOStorage } from "@linkio/backend";
+import { LinkIOStorage } from "linkio-backend";
 
 class CustomStorage implements LinkIOStorage {
   // Implement interface methods
