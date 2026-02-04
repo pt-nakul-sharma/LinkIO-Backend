@@ -12,6 +12,14 @@ export function generateFingerprint(ip: string, userAgent: string): string {
 }
 
 /**
+ * Generate IP-only fingerprint for cross-browser/app matching
+ * Less precise but works when User-Agent differs between browser and app
+ */
+export function generateIPFingerprint(ip: string): string {
+  return createHash("sha256").update(ip).digest("hex").substring(0, 32);
+}
+
+/**
  * Extract client IP from request, handling proxies
  */
 export function getClientIP(req: {

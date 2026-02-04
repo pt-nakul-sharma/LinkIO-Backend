@@ -11,6 +11,7 @@ import {
   detectPlatform,
   parseQueryParams,
   generateFingerprint,
+  generateIPFingerprint,
   getClientIP,
 } from "./utils";
 
@@ -47,9 +48,9 @@ export class LinkIO {
           (req.query.deviceId as string) ||
           (req.headers["x-device-id"] as string);
 
-        // Generate fingerprint for deferred deep linking
+        // Generate fingerprints for deferred deep linking
         const clientIP = getClientIP(req as any);
-        const fingerprint = generateFingerprint(clientIP, userAgent);
+        const ipFingerprint = generateIPFingerprint(clientIP); // IP-only for cross-browser/app matching
 
         const pendingData = {
           url: fullUrl,
@@ -58,9 +59,9 @@ export class LinkIO {
           expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days
         };
 
-        // Always save by fingerprint for deferred deep linking
+        // Save by IP fingerprint for deferred deep linking (works across browser/app)
         await this.config.storage.savePendingLinkByFingerprint(
-          fingerprint,
+          ipFingerprint,
           pendingData,
         );
         if (deviceId) {
@@ -127,14 +128,15 @@ export class LinkIO {
   }
 
   /**
-   * Get pending link by fingerprint (IP + User-Agent)
+   * Get pending link by IP fingerprint
    * Used for deferred deep linking when app wasn't installed
+   * Uses IP-only matching to work across browser and app (different User-Agents)
    */
   async getPendingLinkByFingerprint(
     ip: string,
-    userAgent: string,
+    _userAgent?: string, // Kept for backward compatibility, not used
   ): Promise<DeepLinkData | null> {
-    const fingerprint = generateFingerprint(ip, userAgent);
+    const fingerprint = generateIPFingerprint(ip);
     const data =
       await this.config.storage.getPendingLinkByFingerprint(fingerprint);
     if (!data) return null;
