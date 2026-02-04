@@ -1,4 +1,4 @@
-import { LinkIOStorage, PendingLinkData, ReferralData } from '../types';
+import { LinkIOStorage, PendingLinkData, ReferralData } from "../types";
 
 export interface RedisClient {
   get(key: string): Promise<string | null>;
@@ -10,7 +10,10 @@ export interface RedisClient {
 export class RedisStorage implements LinkIOStorage {
   constructor(private redis: RedisClient) {}
 
-  async savePendingLink(deviceId: string, data: PendingLinkData): Promise<void> {
+  async savePendingLink(
+    deviceId: string,
+    data: PendingLinkData,
+  ): Promise<void> {
     const key = `linkio:pending:${deviceId}`;
     const ttl = Math.floor((data.expiresAt - Date.now()) / 1000);
     await this.redis.set(key, JSON.stringify(data), { EX: ttl });
@@ -20,13 +23,13 @@ export class RedisStorage implements LinkIOStorage {
     const key = `linkio:pending:${deviceId}`;
     const data = await this.redis.get(key);
     if (!data) return null;
-    
+
     const parsed = JSON.parse(data) as PendingLinkData;
     if (Date.now() > parsed.expiresAt) {
       await this.redis.del(key);
       return null;
     }
-    
+
     return parsed;
   }
 
@@ -35,12 +38,42 @@ export class RedisStorage implements LinkIOStorage {
     await this.redis.del(key);
   }
 
+  async savePendingLinkByFingerprint(
+    fingerprint: string,
+    data: PendingLinkData,
+  ): Promise<void> {
+    const key = `linkio:fingerprint:${fingerprint}`;
+    const ttl = Math.floor((data.expiresAt - Date.now()) / 1000);
+    await this.redis.set(key, JSON.stringify(data), { EX: ttl });
+  }
+
+  async getPendingLinkByFingerprint(
+    fingerprint: string,
+  ): Promise<PendingLinkData | null> {
+    const key = `linkio:fingerprint:${fingerprint}`;
+    const data = await this.redis.get(key);
+    if (!data) return null;
+
+    const parsed = JSON.parse(data) as PendingLinkData;
+    if (Date.now() > parsed.expiresAt) {
+      await this.redis.del(key);
+      return null;
+    }
+
+    return parsed;
+  }
+
+  async deletePendingLinkByFingerprint(fingerprint: string): Promise<void> {
+    const key = `linkio:fingerprint:${fingerprint}`;
+    await this.redis.del(key);
+  }
+
   async saveReferral(referral: ReferralData): Promise<void> {
     const existing = await this.getReferralByReferee(referral.refereeId);
     if (!existing) {
       const key = `linkio:referral:${referral.refereeId}`;
       await this.redis.set(key, JSON.stringify(referral));
-      
+
       const referrerKey = `linkio:referrer:${referral.referrerId}`;
       const referees = await this.redis.get(referrerKey);
       const list = referees ? JSON.parse(referees) : [];
@@ -53,10 +86,10 @@ export class RedisStorage implements LinkIOStorage {
     const referrerKey = `linkio:referrer:${referrerId}`;
     const referees = await this.redis.get(referrerKey);
     if (!referees) return [];
-    
+
     const list = JSON.parse(referees) as string[];
     const referrals: ReferralData[] = [];
-    
+
     for (const refereeId of list) {
       const key = `linkio:referral:${refereeId}`;
       const data = await this.redis.get(key);
@@ -64,7 +97,7 @@ export class RedisStorage implements LinkIOStorage {
         referrals.push(JSON.parse(data));
       }
     }
-    
+
     return referrals;
   }
 

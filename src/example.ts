@@ -10,10 +10,13 @@ const linkIO = new LinkIO({
   iosAppId: "123456789",
   iosTeamId: "TEAMID123",
   iosBundleId: "com.rokart.app",
+  iosAppScheme: "rokart", // Custom URL scheme for iOS (rokart://)
   androidPackageName: "com.rokart.app",
+  androidAppScheme: "rokart", // Custom URL scheme for Android (rokart://)
   androidSHA256Fingerprints: [
     "AA:BB:CC:DD:EE:FF:00:11:22:33:44:55:66:77:88:99:AA:BB:CC:DD:EE:FF:00:11:22:33:44:55:66:77:88:99",
   ],
+  fallbackTimeout: 2500, // Wait 2.5s before redirecting to store
   storage: new InMemoryStorage(),
 });
 
@@ -37,9 +40,22 @@ app.get("/link", linkIO.handleDeepLink());
 // The URL patterns below are just examples - adapt to your project's structure
 // ===========================================
 
-// Get pending link for deferred deep linking
+// Get pending link for deferred deep linking (by deviceId)
 app.get("/pending-link/:deviceId", async (req, res) => {
   const data = await linkIO.getPendingLink(req.params.deviceId);
+  if (!data) {
+    return res.status(404).json({ error: "No pending link found" });
+  }
+  res.json(data);
+});
+
+// Get pending link by fingerprint (IP + User-Agent)
+// SDK calls this after app install to retrieve saved deep link params
+app.get("/pending-link", async (req, res) => {
+  const ip = req.ip || req.socket.remoteAddress || "";
+  const userAgent = req.headers["user-agent"] || "";
+
+  const data = await linkIO.getPendingLinkByFingerprint(ip, userAgent);
   if (!data) {
     return res.status(404).json({ error: "No pending link found" });
   }

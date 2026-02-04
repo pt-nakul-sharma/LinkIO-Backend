@@ -22,8 +22,11 @@ const linkIO = new LinkIO({
   iosAppId: "123456789",
   iosTeamId: "TEAMID123",
   iosBundleId: "com.yourapp.ios",
+  iosAppScheme: "myapp", // For smart redirect (myapp://)
   androidPackageName: "com.yourapp.android",
+  androidAppScheme: "myapp", // For smart redirect (myapp://)
   androidSHA256Fingerprints: ["YOUR_SHA256_FINGERPRINT"],
+  fallbackTimeout: 2500, // Wait before redirecting to store
   storage: new InMemoryStorage(),
 });
 
@@ -33,9 +36,17 @@ app.get("/.well-known/*", linkIO.setupWellKnown());
 // Generic deep link handler
 app.get("/link", linkIO.handleDeepLink());
 
-// API endpoints
+// API endpoints - Deferred deep linking
 app.get("/pending-link/:deviceId", async (req, res) => {
   const data = await linkIO.getPendingLink(req.params.deviceId);
+  res.json(data);
+});
+
+// Fingerprint-based pending link (for deferred deep linking)
+app.get("/pending-link", async (req, res) => {
+  const ip = req.ip || req.socket.remoteAddress || "";
+  const userAgent = req.headers["user-agent"] || "";
+  const data = await linkIO.getPendingLinkByFingerprint(ip, userAgent);
   res.json(data);
 });
 
@@ -46,8 +57,8 @@ app.listen(3000);
 
 - **Universal Links (iOS)** - Automatic apple-app-site-association generation
 - **App Links (Android)** - Automatic assetlinks.json generation
-- **Smart Redirects** - Detects platform and redirects to App Store/Play Store
-- **Deferred Deep Linking** - Preserves link data through app installation
+- **Smart Redirects** - Tries to open app first, falls back to App Store/Play Store
+- **Deferred Deep Linking** - Fingerprint-based matching preserves link data through install
 - **Referral Tracking** - Track who referred whom
 - **Storage Options** - In-memory, Redis, or custom storage
 - **TypeScript** - Full type definitions included
@@ -63,8 +74,11 @@ interface LinkIOConfig {
   iosAppId: string; // Apple App Store ID
   iosTeamId: string; // Apple Developer Team ID
   iosBundleId: string; // iOS bundle identifier
+  iosAppScheme?: string; // Custom URL scheme (e.g., 'myapp' for myapp://)
   androidPackageName: string; // Android package name
+  androidAppScheme?: string; // Custom URL scheme (e.g., 'myapp' for myapp://)
   androidSHA256Fingerprints: string[]; // Android SHA256 cert fingerprints
+  fallbackTimeout?: number; // Ms to wait before store redirect (default: 2500)
   storage: LinkIOStorage; // Storage implementation
 }
 ```

@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] - 2026-02-04
+
+### Added
+
+- **Fingerprint-based deferred deep linking** - Matches users before/after app install using IP + User-Agent
+- **Smart redirect** - Tries to open app first, falls back to App Store/Play Store after timeout
+- `iosAppScheme` and `androidAppScheme` config options for custom URL schemes
+- `fallbackTimeout` config option (default: 2500ms)
+- `getPendingLinkByFingerprint(ip, userAgent)` method
+- `generateFingerprint()` and `getClientIP()` utility exports
+
+### Changed
+
+- Deep link handler now always saves params by fingerprint for deferred linking
+- Smart redirect page with loading spinner and manual download button
+
+### How It Works
+
+1. User clicks link → Backend saves params with fingerprint (IP + User-Agent hash)
+2. If app installed → Opens app directly with params
+3. If app NOT installed → Shows loading page, tries app URI, falls back to store
+4. After install → SDK calls `/pending-link` endpoint with same fingerprint to retrieve params
+
 ## [1.2.0] - 2026-02-03
 
 ### Added
